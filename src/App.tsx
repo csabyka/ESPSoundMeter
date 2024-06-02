@@ -24,12 +24,13 @@ function App() {
 
   useLayoutEffect(() => {
     const controller = new AbortController();
+    const hours = parseInt(new URLSearchParams(window.location.search).get('hours') as string) || 3;
 
-    fetch('https://esp-sound-meter.balaton.workers.dev/', {signal: controller.signal})
+    fetch(`https://esp-sound-meter.balaton.workers.dev/?hours=${hours}`, {signal: controller.signal})
         .then((res) => res.json())
         .then(res => {
           setData(res.map((state: {timestamp: string, value: number}) => {
-              state.timestamp = dayjs(state.timestamp).format('YYYY-MM-DD HH:mm');
+              state.timestamp = dayjs(state.timestamp).add(2, 'h').format('YYYY-MM-DD HH:mm');
               return state;
           }));
         });
@@ -44,7 +45,11 @@ function App() {
       {/*<DatePicker.RangePicker presets={rangePresets} onChange={onRangeChange} />*/}
       <Line
           data={data}
-          x={{type: 'band'}}
+          axis={{
+              x: {
+                  labelFilter: (datum: string, idx: number) => idx % 9 === 0,
+              }
+          }}
           className="chart"
           xField="timestamp"
           yField="value"

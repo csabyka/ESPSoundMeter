@@ -42,13 +42,19 @@ export default {
 		}
 	},
 	async fetch(req: Request, env: Env) {
+		const url = new URL(req.url);
+		let hours = parseInt(url.searchParams.get('hours')) || 3;
+
+		if (hours < 1) hours = 1;
+		else if (hours > 6) hours = 6;
+
 		// SQL string to be executed.
 		const query = `
             SELECT 
                 double1 as value,
                 timestamp
             FROM SoundMeter
-            WHERE timestamp > NOW() - INTERVAL '2' HOUR
+            WHERE timestamp > NOW() - INTERVAL '${hours}' HOUR
             ORDER BY timestamp ASC`;
 
 		const queryResponse = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.ACCOUNT_ID}/analytics_engine/sql`, {
@@ -59,7 +65,7 @@ export default {
 			body: query,
 		});
 
-		if (queryResponse.status != 200) {
+		if (queryResponse.status !== 200) {
 			console.error('Error querying:', await queryResponse.text());
 			return new Response('An error occurred!', {status: 500});
 		}
