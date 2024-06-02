@@ -1,0 +1,17 @@
+{
+	"name": "esp-sound-meter",
+	"version": "1.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "CLOUDFLARE_ACCOUNT_ID=d5ad95b51b1a7b1d707058ca362cc00d wrangler deploy",
+		"start": "wrangler dev"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20240529.0",
+		"typescript": "^5.4.5",
+		"wrangler": "^3.0.0"
+	},
+	"overrides": {
+		"@types/node": "20.8.3"
+	}
+}
