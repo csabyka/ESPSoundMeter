@@ -1,16 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import {ConfigProvider} from 'antd';
-import './index.css';
 import App from './App';
+import './index.css';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-      <ConfigProvider>
-          <App />
-      </ConfigProvider>
+      <App />
   </React.StrictMode>
 );
