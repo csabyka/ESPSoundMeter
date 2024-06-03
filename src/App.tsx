@@ -1,39 +1,69 @@
 import React, {useLayoutEffect, useState} from 'react';
 import './App.css';
-// import { DatePicker, TimeRangePickerProps } from "antd";
-import dayjs from 'dayjs';
+import {Button, DatePicker, Space, TimeRangePickerProps} from "antd";
+import dayjs, {Dayjs} from 'dayjs';
 import { Line } from '@ant-design/plots';
+
+type Range = [Dayjs|null, Dayjs|null];
 
 function App() {
   const [data, setData] = useState<any[]>([]);
-  // const rangePresets: TimeRangePickerProps['presets'] = [
-  //   { label: 'Last 7 Days', value: [dayjs().add(-7, 'd'), dayjs()] },
-  //   { label: 'Last 14 Days', value: [dayjs().add(-14, 'd'), dayjs()] },
-  //   { label: 'Last 30 Days', value: [dayjs().add(-30, 'd'), dayjs()] },
-  //   { label: 'Last 90 Days', value: [dayjs().add(-90, 'd'), dayjs()] },
-  // ];
+  const [range, setRange] = useState<Range>([null, null]);
+  const rangePresets: TimeRangePickerProps['presets'] = [
+    { label: 'Last 1 hour', value: [dayjs().add(-1, 'h'), dayjs()] },
+    { label: 'Last 3 hours', value: [dayjs().add(-3, 'h'), dayjs()] },
+    { label: 'Last 6 hours', value: [dayjs().add(-6, 'h'), dayjs()] },
+    { label: 'Last 9 hours', value: [dayjs().add(-9, 'h'), dayjs()] },
+    { label: 'Last 12 hours', value: [dayjs().add(-12, 'h'), dayjs()] },
+  ];
 
-  // const onRangeChange = (dates: null | (Dayjs | null)[], dateStrings: string[]) => {
-  //   if (dates) {
-  //     console.log('From: ', dates[0], ', to: ', dates[1]);
-  //     console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
-  //   } else {
-  //     console.log('Clear');
-  //   }
-  // };
+  const onRangeChange = (dates: null | (Dayjs | null)[], dateStrings: string[]) => {
+      setRange(dates as Range);
+  };
+
+  function getUrl(rangeArr: Range|null) {
+      const url = new URL('https://esp-sound-meter.balaton.workers.dev');
+      if (Array.isArray(rangeArr)) {
+          url.searchParams.set('range', rangeArr.map(t => t?.unix()).join('-'));
+      }
+
+      return url.toString();
+  }
+
+  function applyFilter() {
+    let url = new URL(getUrl(range));
+    window.history.pushState({}, '', url.search)
+    loadData(range);
+  }
+
+  function loadData(rangeArr: Range|null) {
+      fetch(getUrl(rangeArr))
+          .then((res) => res.json())
+          .then(res => {
+              setData(res.map((state: {timestamp: string, value: number}) => {
+                  state.timestamp = dayjs(state.timestamp).add(2, 'h').format('YYYY-MM-DD HH:mm');
+                  return state;
+              }));
+          });
+  }
 
   useLayoutEffect(() => {
-    const controller = new AbortController();
-    const hours = parseInt(new URLSearchParams(window.location.search).get('hours') as string) || 3;
+    const params = new URLSearchParams(window.location.search);
+    // const hours = parseInt(params.get('hours') as string) || 3;
+    const rangeParam = params.get('range');
 
-    fetch(`https://esp-sound-meter.balaton.workers.dev/?hours=${hours}`, {signal: controller.signal})
-        .then((res) => res.json())
-        .then(res => {
-          setData(res.map((state: {timestamp: string, value: number}) => {
-              state.timestamp = dayjs(state.timestamp).add(2, 'h').format('YYYY-MM-DD HH:mm');
-              return state;
-          }));
-        });
+    const rangeArr = rangeParam
+        ? rangeParam.split('-').map((t) => {
+            const timestamp = dayjs.unix(+t);
+            return timestamp.isValid() ? timestamp : null;
+        }) as Range : [dayjs().add(-3, 'h'), dayjs()] as Range;
+
+    setRange(rangeArr);
+
+    // @ts-ignore
+    window.dayjs = dayjs;
+
+    loadData(rangeArr);
 
     // return () => {
     //   controller.abort();
@@ -42,7 +72,10 @@ function App() {
 
   return (
     <div className="App">
-      {/*<DatePicker.RangePicker presets={rangePresets} onChange={onRangeChange} />*/}
+      <Space>
+        <DatePicker.RangePicker showTime showSecond={false} value={range} presets={rangePresets} onChange={onRangeChange} />
+        <Button disabled={!range} type="primary" onClick={applyFilter}>Apply</Button>
+      </Space>
       <Line
           data={data}
           axis={{

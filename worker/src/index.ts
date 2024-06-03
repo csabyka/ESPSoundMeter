@@ -1,4 +1,6 @@
 import {AnalyticsResponse, Env, Sensor} from '../types';
+// @ts-ignore
+import dayjs from 'dayjs';
 
 const sensorIds: Sensor['entity_id'][] = [
 	'sensor.soundmeter_laeq_1min',
@@ -42,11 +44,24 @@ export default {
 		}
 	},
 	async fetch(req: Request, env: Env) {
-		const url = new URL(req.url);
-		let hours = parseInt(url.searchParams.get('hours')) || 3;
+		const params = new URL(req.url).searchParams;
+		let range: any = params.get('range');
+		let hours = parseInt(params.get('hours')) || 3;
 
 		if (hours < 1) hours = 1;
-		else if (hours > 6) hours = 6;
+		else if (hours > 12) hours = 12;
+
+		range = range ? range.split('-').map((t: string) => +t) : [dayjs().add(hours * -1, 'h').unix()];
+
+		let whereCondition = [];
+
+		if (range.length > 0) {
+			whereCondition.push(`(timestamp > toDateTime(${range[0]}))`);
+		}
+
+		if (range.length > 1) {
+			whereCondition.push(`(timestamp <= toDateTime(${range[1]}))`)
+		}
 
 		// SQL string to be executed.
 		const query = `
@@ -54,7 +69,7 @@ export default {
                 double1 as value,
                 timestamp
             FROM SoundMeter
-            WHERE timestamp > NOW() - INTERVAL '${hours}' HOUR
+            WHERE ${whereCondition.join(' AND ')}
             ORDER BY timestamp ASC`;
 
 		const queryResponse = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.ACCOUNT_ID}/analytics_engine/sql`, {
