@@ -1,4 +1,4 @@
-import React, {useLayoutEffect, useState} from 'react';
+import React, {useCallback, useLayoutEffect, useMemo, useState} from 'react';
 import './App.css';
 import {Button, DatePicker, Space, TimeRangePickerProps} from "antd";
 import dayjs, {Dayjs} from 'dayjs';
@@ -9,15 +9,19 @@ type Range = [Dayjs|null, Dayjs|null];
 function App() {
   const [data, setData] = useState<any[]>([]);
   const [range, setRange] = useState<Range>([null, null]);
-  const rangePresets: TimeRangePickerProps['presets'] = [
-    { label: 'Last 1 hour', value: [dayjs().add(-1, 'h'), dayjs()] },
-    { label: 'Last 3 hours', value: [dayjs().add(-3, 'h'), dayjs()] },
-    { label: 'Last 6 hours', value: [dayjs().add(-6, 'h'), dayjs()] },
-    { label: 'Last 9 hours', value: [dayjs().add(-9, 'h'), dayjs()] },
-    { label: 'Last 12 hours', value: [dayjs().add(-12, 'h'), dayjs()] },
-  ];
+  const rangePresets: TimeRangePickerProps['presets'] = useMemo(() => {
+      const now = dayjs();
 
-  const onRangeChange = (dates: null | (Dayjs | null)[], dateStrings: string[]) => {
+      return [
+          { label: 'Last 1 hour', value: [now.add(-1, 'h'), now] },
+          { label: 'Last 3 hours', value: [now.add(-3, 'h'), now] },
+          { label: 'Last 6 hours', value: [now.add(-6, 'h'), now] },
+          { label: 'Last 9 hours', value: [now.add(-9, 'h'), now] },
+          { label: 'Last 12 hours', value: [now.add(-12, 'h'), now] },
+      ]
+  }, []);
+
+  const onRangeChange = (dates: null | (Dayjs | null)[]) => {
       setRange(dates as Range);
   };
 
@@ -36,7 +40,7 @@ function App() {
     loadData(range);
   }
 
-  function loadData(rangeArr: Range|null) {
+  const loadData = useCallback(function (rangeArr: Range|null) {
       fetch(getUrl(rangeArr))
           .then((res) => res.json())
           .then(res => {
@@ -45,7 +49,7 @@ function App() {
                   return state;
               }));
           });
-  }
+  }, []);
 
   useLayoutEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -68,7 +72,7 @@ function App() {
     // return () => {
     //   controller.abort();
     // }
-  }, []);
+  }, [loadData]);
 
   return (
     <div className="App">
