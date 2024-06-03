@@ -8,3 +8,8 @@
 .chart {
   margin-top: 20px;
 }
+
+.headline {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
