@@ -4,7 +4,9 @@ compatibility_date = "2022-10-21"
 compatibility_flags = [ "nodejs_compat" ]
 
 analytics_engine_datasets = [
-    { binding = "SOUNDMETER", dataset = "SoundMeter" }
+    { binding = "SOUNDMETER", dataset = "SoundMeter" },
+    { binding = "SOUNDMETER_E1", dataset = "SoundMeter_E1" },
+    { binding = "SOUNDMETER_E2", dataset = "SoundMeter_E2" }
 ]
 
 # secrets:

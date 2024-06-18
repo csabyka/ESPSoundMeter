@@ -3,6 +3,8 @@ export type Env = {
     ANALYTICS_API_TOKEN: string, // secret
     ACCOUNT_ID: string,
     SOUNDMETER: AnalyticsEngineDataset,
+    SOUNDMETER_E1: AnalyticsEngineDataset,
+    SOUNDMETER_E2: AnalyticsEngineDataset,
 }
 
 export type Sensor = {

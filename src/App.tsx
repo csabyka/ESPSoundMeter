@@ -50,7 +50,7 @@ function App() {
         loadData(range);
     }
 
-    const loadData = useCallback(function (rangeArr: Range | null) {
+    const loadData: ((rangeArr: Range | null) => void) = useCallback(function (rangeArr: Range | null) {
         fetch(getUrl(rangeArr))
             .then((res) => res.json())
             .then(res => {
@@ -111,6 +111,7 @@ function App() {
                 className="chart"
                 xField="timestamp"
                 yField="value"
+                colorField="type"
                 annotations={[{
                     type: "lineY",
                     yField: 50,

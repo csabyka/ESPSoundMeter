@@ -18,30 +18,55 @@ const sensorIds: Sensor['entity_id'][] = [
 	'sensor.soundmeter_lzpeak_1min',
 ];
 
+function getData(query: string, env: Env): Promise<AnalyticsResponse> {
+	return fetch(`https://api.cloudflare.com/client/v4/accounts/${env.ACCOUNT_ID}/analytics_engine/sql`, {
+		method: 'POST',
+		headers: { 'Authorization': `Bearer ${env.ANALYTICS_API_TOKEN}` },
+		body: query,
+	}).then(async (res) => {
+		if (!res.ok) {
+			console.log('GET DATA ERROR', await res.text());
+			return {meta: null, data: []};
+		}
+
+		return res.json();
+	});
+}
+
 export default {
 	async scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext) {
 		const sensors: Sensor[] = await fetch('https://ha.csy.space/api/states', {
 			headers: new Headers({ Authorization: `Bearer ${env.HOME_ASSISTANT_BEARER_TOKEN}` })
-		})
-			.then(res => res.json())
-			.then((s: Sensor[]) => s.filter(sensor => sensorIds.includes(sensor.entity_id)));
+		}).then(res => res.json());
 
-		const sensorSates = sensorIds.map(id => {
-			const sensor = sensors.find(s => s.entity_id === id);
-			return parseFloat(sensor?.state) || 0;
+		env.SOUNDMETER.writeDataPoint({
+			blobs: sensorIds,
+			doubles: sensorIds.map(id => {
+				const sensor = sensors.find(s => s.entity_id === id);
+				return parseFloat(sensor?.state) || 0;
+			}),
+			indexes: ['esp-sound-meter']
 		});
 
-		if (sensorSates.some(state => state > 0)) {
-			env.SOUNDMETER.writeDataPoint({
-				blobs: sensorIds,
-				doubles: sensorSates,
-				indexes: ['esp-sound-meter']
-			});
+		const sensorIdsExternal1 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external1_'));
+		env.SOUNDMETER_E1.writeDataPoint({
+			blobs: sensorIdsExternal1,
+			doubles: sensorIdsExternal1.map(id => {
+				const sensor = sensors.find(s => s.entity_id === id);
+				return parseFloat(sensor?.state) || 0;
+			}),
+			indexes: ['esp-sound-meter-external-1']
+		});
 
-			console.log('Sensor data saved', Date.now());
-		} else {
-			console.log('Sensor turned off', Date.now());
-		}
+		const sensorIdsExternal2 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external2_'));
+		env.SOUNDMETER_E2.writeDataPoint({
+			blobs: sensorIdsExternal2,
+			doubles: sensorIdsExternal2.map(id => {
+				const sensor = sensors.find(s => s.entity_id === id);
+				return parseFloat(sensor?.state) || 0;
+			}),
+			indexes: ['esp-sound-meter-external-2']
+		});
 	},
 	async fetch(req: Request, env: Env) {
 		const params = new URL(req.url).searchParams;
@@ -66,27 +91,24 @@ export default {
 		// SQL string to be executed.
 		const query = `
             SELECT 
-                double1 as value,
-                timestamp
+                double10 as value,
+                timestamp,
+                TYPE as type
             FROM SoundMeter
-            WHERE ${whereCondition.join(' AND ')}
+            ${whereCondition ? 'WHERE ' + whereCondition.join(' AND ') : ''}
             ORDER BY timestamp ASC`;
 
-		const queryResponse = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.ACCOUNT_ID}/analytics_engine/sql`, {
-			method: 'POST',
-			headers: {
-				'Authorization': `Bearer ${env.ANALYTICS_API_TOKEN}`,
-			},
-			body: query,
-		});
+		const queryResponses = await Promise.all([
+			getData(query.replace('TYPE', "'home'"), env),
+			getData(query
+				.replace('SoundMeter', 'SoundMeter_E1')
+				.replace('TYPE', "'external_1"), env),
+			getData(query
+				.replace('SoundMeter', 'SoundMeter_E2')
+				.replace('TYPE', "'external_2'"), env),
+		]).then(data => data.flatMap(d => d.data));
 
-		if (queryResponse.status !== 200) {
-			console.error('Error querying:', await queryResponse.text());
-			return new Response('An error occurred!', {status: 500});
-		}
-
-		const queryJSON: AnalyticsResponse = await queryResponse.json();
-		return Response.json(queryJSON.data, {
+		return Response.json(queryResponses, {
 			headers: new Headers({
 				'Access-Control-Allow-Origin': '*'
 			})
