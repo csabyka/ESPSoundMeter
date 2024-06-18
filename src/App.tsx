@@ -28,7 +28,7 @@ function App() {
         const values = data.map(state => state.value).filter(v => v > 0);
         return {
             max: Math.max(...values),
-            avg: values.reduce((sum, value) => sum + value, 0) / values.length,
+            // avg: values.reduce((sum, value) => sum + value, 0) / values.length,
         };
     }, [data]);
     const onRangeChange = (dates: null | (Dayjs | null)[]) => {
@@ -89,7 +89,6 @@ function App() {
             <div className="headline">
                 <Space align="start">
                     <b>Max: {data.length > 0 ? stat.max : 0} dBa</b>
-                    | <b>Avg: {data.length > 0 ? stat.avg.toFixed(2) : 0} dBa</b>
                 </Space>
                 <Space>
                     <DatePicker.RangePicker
@@ -116,30 +115,7 @@ function App() {
                     type: "lineY",
                     yField: 50,
                     style: {stroke: "#FC2947", strokeOpacity: 1, lineWidth: 2},
-                }, {
-                    type: "lineY",
-                    yField: stat.avg,
-                    style: {stroke: "#ECCA9C", strokeOpacity: 1, lineWidth: 2},
                 }]}
-                line={{
-                    style: {
-                        stroke: '#35374B',
-                        strokeWidth: 2,
-                    },
-                }}
-                tooltip={{
-                    title: 'dBa',
-                    items: [{
-                        channel: 'x',
-                        name: 'Timestamp',
-                        color: '#fff',
-                    }, {
-                        channel: 'y',
-                        name: 'dBa',
-                        field: 'value',
-                        valueFormatter: (value: number) => `${value} dBa`,
-                    }],
-                }}
             />
         </div>
     );
