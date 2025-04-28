@@ -91,7 +91,7 @@ export default {
 		// SQL string to be executed.
 		const query = `
             SELECT 
-                double10 as value,
+                double1 as value,
                 timestamp,
                 TYPE as type
             FROM SoundMeter
