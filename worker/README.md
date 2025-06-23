@@ -32,6 +32,7 @@ Then, when calling the worker you must supply an `Authorization: Bearer <your to
 ## Customisation
 
 Various customisations are suggested such as changing the worker and dataset names, and adjusting which fields are logged and any other pre-processing. See the comment at the top of `src/index.js` for where to make these changes.
+cs
 
 ## Further reading
 
