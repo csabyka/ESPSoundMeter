@@ -5,6 +5,7 @@ export type Env = {
     SOUNDMETER: AnalyticsEngineDataset,
     SOUNDMETER_E1: AnalyticsEngineDataset,
     SOUNDMETER_E2: AnalyticsEngineDataset,
+    SOUNDMETER_E3: AnalyticsEngineDataset,
 }
 
 export type Sensor = {
