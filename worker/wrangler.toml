@@ -7,6 +7,7 @@ analytics_engine_datasets = [
     { binding = "SOUNDMETER", dataset = "SoundMeter" },
     { binding = "SOUNDMETER_E1", dataset = "SoundMeter_E1" },
     { binding = "SOUNDMETER_E2", dataset = "SoundMeter_E2" }
+    { binding = "SOUNDMETER_E3", dataset = "SoundMeter_E3" }
 ]
 
 # secrets:
