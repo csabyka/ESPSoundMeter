@@ -22,6 +22,7 @@ function App() {
             {label: 'Last 6 hours', value: [now.add(-6, 'h'), now]},
             {label: 'Last 9 hours', value: [now.add(-9, 'h'), now]},
             {label: 'Last 12 hours', value: [now.add(-12, 'h'), now]},
+            {label: 'Last 24 hours', value: [now.add(-24, 'h'), now]},
         ]
     }, []);
     const stat = useMemo(() => {

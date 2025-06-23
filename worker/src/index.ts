@@ -67,6 +67,17 @@ export default {
 			}),
 			indexes: ['esp-sound-meter-external-2']
 		});
+
+		const sensorIdsExternal3 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external3_'));
+		env.SOUNDMETER_E3.writeDataPoint({
+			blobs: sensorIdsExternal3,
+			doubles: sensorIdsExternal3.map(id => {
+				const sensor = sensors.find(s => s.entity_id === id);
+				return parseFloat(sensor?.state) || 0;
+			}),
+			indexes: ['esp-sound-meter-external-3']
+		});
+
 	},
 	async fetch(req: Request, env: Env) {
 		const params = new URL(req.url).searchParams;
@@ -106,6 +117,9 @@ export default {
 			getData(query
 				.replace('SoundMeter', 'SoundMeter_E2')
 				.replace('TYPE', "'external_2'"), env),
+			getData(query
+				.replace('SoundMeter', 'SoundMeter_E3')
+				.replace('TYPE', "'external_3'"), env),
 		]).then(data => data.flatMap(d => d.data));
 
 		return Response.json(queryResponses, {
