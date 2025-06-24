@@ -113,7 +113,7 @@ export default {
 			getData(query.replace('TYPE', "'home'"), env),
 			getData(query
 				.replace('SoundMeter', 'SoundMeter_E1')
-				.replace('TYPE', "'external_1"), env),
+				.replace('TYPE', "'external_1'"), env),
 			getData(query
 				.replace('SoundMeter', 'SoundMeter_E2')
 				.replace('TYPE', "'external_2'"), env),
