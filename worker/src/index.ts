@@ -78,6 +78,46 @@ export default {
 			indexes: ['esp-sound-meter-external-3']
 		});
 
+		const sensorIdsExternal4 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external4_'));
+		env.SOUNDMETER_E3.writeDataPoint({
+			blobs: sensorIdsExternal4,
+			doubles: sensorIdsExternal4.map(id => {
+				const sensor = sensors.find(s => s.entity_id === id);
+				return parseFloat(sensor?.state) || 0;
+			}),
+			indexes: ['esp-sound-meter-external-4']
+		});
+
+		const sensorIdsExternal5 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external5_'));
+		env.SOUNDMETER_E5.writeDataPoint({
+			blobs: sensorIdsExternal5,
+			doubles: sensorIdsExternal5.map(id => {
+				const sensor = sensors.find(s => s.entity_id === id);
+				return parseFloat(sensor?.state) || 0;
+			}),
+			indexes: ['esp-sound-meter-external-5']
+		});
+
+		const sensorIdsExternal6 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external6_'));
+		env.SOUNDMETER_E6.writeDataPoint({
+			blobs: sensorIdsExternal6,
+			doubles: sensorIdsExternal6.map(id => {
+				const sensor = sensors.find(s => s.entity_id === id);
+				return parseFloat(sensor?.state) || 0;
+			}),
+			indexes: ['esp-sound-meter-external-6']
+		});
+
+		const sensorIdsExternal7 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external7_'));
+		env.SOUNDMETER_E7.writeDataPoint({
+			blobs: sensorIdsExternal7,
+			doubles: sensorIdsExternal7.map(id => {
+				const sensor = sensors.find(s => s.entity_id === id);
+				return parseFloat(sensor?.state) || 0;
+			}),
+			indexes: ['esp-sound-meter-external-7']
+		});
+
 	},
 	async fetch(req: Request, env: Env) {
 		const params = new URL(req.url).searchParams;
@@ -120,6 +160,19 @@ export default {
 			getData(query
 				.replace('SoundMeter', 'SoundMeter_E3')
 				.replace('TYPE', "'external_3'"), env),
+			getData(query
+				.replace('SoundMeter', 'SoundMeter_E4')
+				.replace('TYPE', "'external_4'"), env),
+			getData(query
+				.replace('SoundMeter', 'SoundMeter_E5')
+				.replace('TYPE', "'external_5'"), env),
+			getData(query
+				.replace('SoundMeter', 'SoundMeter_E6')
+				.replace('TYPE', "'external_6'"), env),
+			getData(query
+				.replace('SoundMeter', 'SoundMeter_E7')
+				.replace('TYPE', "'external_7'"), env),
+
 		]).then(data => data.flatMap(d => d.data));
 
 		return Response.json(queryResponses, {
