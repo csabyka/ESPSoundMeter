@@ -79,7 +79,7 @@ export default {
 		});
 
 		const sensorIdsExternal4 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external4_'));
-		env.SOUNDMETER_E3.writeDataPoint({
+		env.SOUNDMETER_E4.writeDataPoint({
 			blobs: sensorIdsExternal4,
 			doubles: sensorIdsExternal4.map(id => {
 				const sensor = sensors.find(s => s.entity_id === id);
