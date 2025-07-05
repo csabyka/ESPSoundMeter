@@ -1,18 +1,20 @@
-import {useCallback, useLayoutEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useLayoutEffect, useMemo, useState, useRef} from 'react';
 import {Button, DatePicker, Space, TimeRangePickerProps} from "antd";
 import dayjs, {Dayjs} from 'dayjs';
 import {Line} from '@ant-design/plots';
 import './App.css';
+import {Row, Location, Range} from './types';
 
-type Row = {
-    timestamp: string,
-    value: number
-};
-type Range = [Dayjs | null, Dayjs | null];
+const GOOGLE_MAPS_API_KEY = 'AIzaSyCmJdKby6JGfFttTxaIBQylSR9JWOw5loU';
 
 function App() {
     const [data, setData] = useState<Row[]>([]);
+    const [locations, setLocations] = useState<Location[]>([]);
+    const [latestValues, setLatestValues] = useState<{[key: string]: number}>({});
     const [range, setRange] = useState<Range>([null, null]);
+    const mapRef = useRef<HTMLDivElement>(null);
+    const mapInstanceRef = useRef<google.maps.Map | null>(null);
+    const markersRef = useRef<google.maps.Marker[]>([]);
     const rangePresets: TimeRangePickerProps['presets'] = useMemo(() => {
         const now = dayjs();
 
@@ -38,10 +40,13 @@ function App() {
         setRange(dates as Range);
     };
 
-    function getUrl(rangeArr: Range | null) {
+    function getUrl(rangeArr: Range | null, onlyLatest?: boolean) {
         const url = new URL('https://esp-sound-meter.balaton.workers.dev');
         if (Array.isArray(rangeArr)) {
             url.searchParams.set('range', rangeArr.map(t => t?.unix()).join('-'));
+        }
+        if (onlyLatest) {
+            url.searchParams.set('onlyLatest', '1');
         }
 
         return url.toString();
@@ -56,11 +61,35 @@ function App() {
     const loadData: ((rangeArr: Range | null) => void) = useCallback(function (rangeArr: Range | null) {
         fetch(getUrl(rangeArr))
             .then((res) => res.json())
-            .then(({data, locations}) => {
-                setData(data.map((state: { timestamp: string, value: number }) => {
+            .then(({data: sensorData, locations}) => {
+                setData(sensorData.map((state: { timestamp: string, value: number }) => {
                     state.timestamp = dayjs(state.timestamp).add(2, 'h').format('YYYY-MM-DD HH:mm');
                     return state;
                 }));
+
+                setLocations(locations);
+            });
+    }, []);
+
+    const loadLatest = useCallback(function () {
+        fetch(getUrl(null, true))
+            .then((res) => res.json())
+            .then(({data: sensorData, locations}) => {
+                // setData(sensorData.map((state: { timestamp: string, value: number }) => {
+                //     state.timestamp = dayjs(state.timestamp).add(2, 'h').format('YYYY-MM-DD HH:mm');
+                //     return state;
+                // }));
+
+                setLocations(locations);
+                
+                // Store latest values by location type
+                const valuesByType: {[key: string]: number} = {};
+                sensorData.forEach((item: { timestamp: string, value: number, type?: string }) => {
+                    if (item.type) {
+                        valuesByType[item.type] = item.value;
+                    }
+                });
+                setLatestValues(valuesByType);
             });
     }, []);
 
@@ -86,6 +115,107 @@ function App() {
         //   controller.abort();
         // }
     }, [loadData]);
+
+    // Interval for real-time updates (every minute)
+    useLayoutEffect(() => {
+        const interval = setInterval(() => {
+            loadLatest();
+        }, 60 * 1000);
+
+        loadLatest();
+
+        return () => {
+            clearInterval(interval);
+        };
+    }, [loadLatest]);
+
+    // Initialize Google Maps
+    useLayoutEffect(() => {
+        if (!mapRef.current || mapInstanceRef.current) return;
+
+        const initMap = () => {
+            if (typeof google === 'undefined') {
+                console.error('Google Maps API not loaded');
+                return;
+            }
+
+            const map = new google.maps.Map(mapRef.current!, {
+                center: { lat: 46.9541, lng: 17.8881 }, // Balaton area
+                zoom: 10,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                mapTypeControl: true,
+                streetViewControl: false,
+                fullscreenControl: true,
+            });
+
+            mapInstanceRef.current = map;
+        };
+
+        // Load Google Maps API if not already loaded
+        if (typeof google === 'undefined') {
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+            script.async = true;
+            script.defer = true;
+            script.onload = initMap;
+            document.head.appendChild(script);
+        } else {
+            initMap();
+        }
+
+        return () => {
+            // Cleanup markers
+            markersRef.current.forEach(marker => marker.setMap(null));
+            markersRef.current = [];
+        };
+    }, []);
+
+    // Update markers when locations or latest values change
+    useEffect(() => {
+        if (!mapInstanceRef.current || locations.length === 0) return;
+
+        // Clear existing markers
+        markersRef.current.forEach(marker => marker.setMap(null));
+        markersRef.current = [];
+
+        // Add new markers
+        const bounds = new google.maps.LatLngBounds();
+        
+        locations.forEach((location) => {
+            const latestValue = latestValues[location.type] || 0;
+            
+            // Create a custom marker with 50-meter diameter circle
+            const marker = new google.maps.Marker({
+                position: { lat: location.lat, lng: location.lng },
+                map: mapInstanceRef.current,
+                title: `${location.type}: ${latestValue} dBa`,
+                label: {
+                    text: `${latestValue}`,
+                    color: 'white',
+                    fontWeight: 'bold'
+                },
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 30, // 60-meter diameter (30 pixels radius)
+                    fillColor: latestValue > 50 ? '#FC2947' : '#4285F4', // Red if > 50 dBa, blue otherwise
+                    fillOpacity: 0.8,
+                    strokeColor: '#FFFFFF',
+                    strokeWeight: 2
+                }
+            });
+
+            markersRef.current.push(marker);
+            bounds.extend({ lat: location.lat, lng: location.lng });
+        });
+
+        // Fit map to show all markers
+        if (locations.length > 1) {
+            mapInstanceRef.current.fitBounds(bounds);
+        } else if (locations.length === 1) {
+            mapInstanceRef.current.setCenter({ lat: locations[0].lat, lng: locations[0].lng });
+            mapInstanceRef.current.setZoom(12);
+        }
+    }, [locations, latestValues]);
 
     return (
         <div className="App">
@@ -122,7 +252,7 @@ function App() {
             />
 
             <div className="google-maps">
-                
+                <div ref={mapRef} style={{ width: '100%', height: '400px' }}></div>
             </div>
         </div>
     );
