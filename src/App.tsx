@@ -1,8 +1,8 @@
-import React, {useCallback, useLayoutEffect, useMemo, useState} from 'react';
-import './App.css';
+import {useCallback, useLayoutEffect, useMemo, useState} from 'react';
 import {Button, DatePicker, Space, TimeRangePickerProps} from "antd";
 import dayjs, {Dayjs} from 'dayjs';
 import {Line} from '@ant-design/plots';
+import './App.css';
 
 type Row = {
     timestamp: string,
@@ -56,8 +56,8 @@ function App() {
     const loadData: ((rangeArr: Range | null) => void) = useCallback(function (rangeArr: Range | null) {
         fetch(getUrl(rangeArr))
             .then((res) => res.json())
-            .then(res => {
-                setData(res.map((state: { timestamp: string, value: number }) => {
+            .then(({data, locations}) => {
+                setData(data.map((state: { timestamp: string, value: number }) => {
                     state.timestamp = dayjs(state.timestamp).add(2, 'h').format('YYYY-MM-DD HH:mm');
                     return state;
                 }));
@@ -120,6 +120,10 @@ function App() {
                     style: {stroke: "#FC2947", strokeOpacity: 1, lineWidth: 2},
                 }]}
             />
+
+            <div className="google-maps">
+                
+            </div>
         </div>
     );
 }

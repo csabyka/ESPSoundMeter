@@ -33,111 +33,47 @@ function getData(query: string, env: Env): Promise<AnalyticsResponse> {
 	});
 }
 
-export default {
+function writeDataPoint(sensors: Sensor[], dataset: AnalyticsEngineDataset, sensorIds: string[], index: string) {
+	dataset.writeDataPoint({
+		blobs: sensorIds,
+		doubles: sensorIds.map(id => {
+			const sensor = sensors.find(s => s.entity_id === id);
+			return parseFloat(sensor?.state) || 0;
+		}),
+		indexes: [index]
+	});
+}
+
+const app = {
 	async scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext) {
 		const sensors: Sensor[] = await fetch('https://ha.csy.space/api/states', {
 			headers: new Headers({ Authorization: `Bearer ${env.HOME_ASSISTANT_BEARER_TOKEN}` })
 		}).then(res => res.json());
 
-		env.SOUNDMETER.writeDataPoint({
-			blobs: sensorIds,
-			doubles: sensorIds.map(id => {
-				const sensor = sensors.find(s => s.entity_id === id);
-				return parseFloat(sensor?.state) || 0;
-			}),
-			indexes: ['esp-sound-meter']
-		});
-
-		const sensorIdsExternal1 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external1_'));
-		env.SOUNDMETER_E1.writeDataPoint({
-			blobs: sensorIdsExternal1,
-			doubles: sensorIdsExternal1.map(id => {
-				const sensor = sensors.find(s => s.entity_id === id);
-				return parseFloat(sensor?.state) || 0;
-			}),
-			indexes: ['esp-sound-meter-external-1']
-		});
-
-		const sensorIdsExternal2 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external2_'));
-		env.SOUNDMETER_E2.writeDataPoint({
-			blobs: sensorIdsExternal2,
-			doubles: sensorIdsExternal2.map(id => {
-				const sensor = sensors.find(s => s.entity_id === id);
-				return parseFloat(sensor?.state) || 0;
-			}),
-			indexes: ['esp-sound-meter-external-2']
-		});
-
-		const sensorIdsExternal3 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external3_'));
-		env.SOUNDMETER_E3.writeDataPoint({
-			blobs: sensorIdsExternal3,
-			doubles: sensorIdsExternal3.map(id => {
-				const sensor = sensors.find(s => s.entity_id === id);
-				return parseFloat(sensor?.state) || 0;
-			}),
-			indexes: ['esp-sound-meter-external-3']
-		});
-
-		const sensorIdsExternal4 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external4_'));
-		env.SOUNDMETER_E4.writeDataPoint({
-			blobs: sensorIdsExternal4,
-			doubles: sensorIdsExternal4.map(id => {
-				const sensor = sensors.find(s => s.entity_id === id);
-				return parseFloat(sensor?.state) || 0;
-			}),
-			indexes: ['esp-sound-meter-external-4']
-		});
-
-		const sensorIdsExternal5 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external5_'));
-		env.SOUNDMETER_E5.writeDataPoint({
-			blobs: sensorIdsExternal5,
-			doubles: sensorIdsExternal5.map(id => {
-				const sensor = sensors.find(s => s.entity_id === id);
-				return parseFloat(sensor?.state) || 0;
-			}),
-			indexes: ['esp-sound-meter-external-5']
-		});
-
-		const sensorIdsExternal6 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external6_'));
-		env.SOUNDMETER_E6.writeDataPoint({
-			blobs: sensorIdsExternal6,
-			doubles: sensorIdsExternal6.map(id => {
-				const sensor = sensors.find(s => s.entity_id === id);
-				return parseFloat(sensor?.state) || 0;
-			}),
-			indexes: ['esp-sound-meter-external-6']
-		});
-
-		const sensorIdsExternal7 = sensorIds.map((id) => id.replace('soundmeter_', 'soundmeter_external7_'));
-		env.SOUNDMETER_E7.writeDataPoint({
-			blobs: sensorIdsExternal7,
-			doubles: sensorIdsExternal7.map(id => {
-				const sensor = sensors.find(s => s.entity_id === id);
-				return parseFloat(sensor?.state) || 0;
-			}),
-			indexes: ['esp-sound-meter-external-7']
-		});
-
+		writeDataPoint(sensors, env.SOUNDMETER, sensorIds, 'esp-sound-meter');
+		writeDataPoint(sensors, env.SOUNDMETER_E1, sensorIds.map(id => id.replace('soundmeter_', 'soundmeter_external1_')), 'esp-sound-meter-external-1');
+		writeDataPoint(sensors, env.SOUNDMETER_E2, sensorIds.map(id => id.replace('soundmeter_', 'soundmeter_external2_')), 'esp-sound-meter-external-2');
+		writeDataPoint(sensors, env.SOUNDMETER_E3, sensorIds.map(id => id.replace('soundmeter_', 'soundmeter_external3_')), 'esp-sound-meter-external-3');
+		writeDataPoint(sensors, env.SOUNDMETER_E4, sensorIds.map(id => id.replace('soundmeter_', 'soundmeter_external4_')), 'esp-sound-meter-external-4');
+		writeDataPoint(sensors, env.SOUNDMETER_E5, sensorIds.map(id => id.replace('soundmeter_', 'soundmeter_external5_')), 'esp-sound-meter-external-5');
+		writeDataPoint(sensors, env.SOUNDMETER_E6, sensorIds.map(id => id.replace('soundmeter_', 'soundmeter_external6_')), 'esp-sound-meter-external-6');
+		writeDataPoint(sensors, env.SOUNDMETER_E7, sensorIds.map(id => id.replace('soundmeter_', 'soundmeter_external7_')), 'esp-sound-meter-external-7');
 	},
 	async fetch(req: Request, env: Env) {
 		const params = new URL(req.url).searchParams;
 		let range: any = params.get('range');
 		let hours = parseInt(params.get('hours')) || 3;
+		const onlyLatest = params.has('onlyLatest');
 
 		if (hours < 1) hours = 1;
 		else if (hours > 12) hours = 12;
 
 		range = range ? range.split('-').map((t: string) => +t) : [dayjs().add(hours * -1, 'h').unix()];
 
-		let whereCondition = [];
-
-		if (range.length > 0) {
-			whereCondition.push(`(timestamp > toDateTime(${range[0]}))`);
-		}
-
-		if (range.length > 1) {
-			whereCondition.push(`(timestamp <= toDateTime(${range[1]}))`)
-		}
+		let whereCondition = [
+			range.length > 0 ? `(timestamp > toDateTime(${range[0]}))` : null,
+			range.length > 1 ? `(timestamp <= toDateTime(${range[1]}))` : null,
+		].filter(Boolean).join(' AND ');
 
 		// SQL string to be executed.
 		const query = `
@@ -146,8 +82,9 @@ export default {
                 timestamp,
                 TYPE as type
             FROM SoundMeter
-            ${whereCondition ? 'WHERE ' + whereCondition.join(' AND ') : ''}
-            ORDER BY timestamp ASC`;
+            ${whereCondition ? 'WHERE ' + whereCondition : ''}
+            ORDER BY timestamp ${onlyLatest ? 'DESC' : 'ASC'}
+            ${onlyLatest ? 'LIMIT 1' : ''}`;
 
 		const queryResponses = await Promise.all([
 			getData(query.replace('TYPE', "'home'"), env),
@@ -175,10 +112,24 @@ export default {
 
 		]).then(data => data.flatMap(d => d.data));
 
-		return Response.json(queryResponses, {
+		return Response.json({
+			data:queryResponses,
+			locations: [
+				{type: 'home', lat: 47.015748, lng: 18.205129},
+				{type: 'external_1', lat: 47.014146, lng: 18.206357},
+				// {type: 'external_2', lat: 48.8566, lng: 2.3522},
+				// {type: 'external_3', lat: 48.8566, lng: 2.3522},
+				// {type: 'external_4', lat: 48.8566, lng: 2.3522},
+				// {type: 'external_5', lat: 48.8566, lng: 2.3522},
+				// {type: 'external_6', lat: 48.8566, lng: 2.3522},
+				// {type: 'external_7', lat: 48.8566, lng: 2.3522},
+			]
+		}, {
 			headers: new Headers({
 				'Access-Control-Allow-Origin': '*'
 			})
 		});
 	}
 };
+
+export default app;
