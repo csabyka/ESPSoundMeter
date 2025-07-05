@@ -113,7 +113,7 @@ const app = {
 		]).then(data => data.flatMap(d => d.data));
 
 		return Response.json({
-			data:queryResponses,
+			values: queryResponses,
 			locations: [
 				{type: 'home', lat: 47.015748, lng: 18.205129},
 				{type: 'external_1', lat: 47.014146, lng: 18.206357},

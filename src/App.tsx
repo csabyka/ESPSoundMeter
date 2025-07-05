@@ -5,7 +5,7 @@ import {Line} from '@ant-design/plots';
 import './App.css';
 import {Row, Location, Range} from './types';
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyCmJdKby6JGfFttTxaIBQylSR9JWOw5loU';
+console.log(process.env);
 
 function App() {
     const [data, setData] = useState<Row[]>([]);
@@ -61,8 +61,8 @@ function App() {
     const loadData: ((rangeArr: Range | null) => void) = useCallback(function (rangeArr: Range | null) {
         fetch(getUrl(rangeArr))
             .then((res) => res.json())
-            .then(({data: sensorData, locations}) => {
-                setData(sensorData.map((state: { timestamp: string, value: number }) => {
+            .then(({values, locations}) => {
+                setData(values.map((state: { timestamp: string, value: number }) => {
                     state.timestamp = dayjs(state.timestamp).add(2, 'h').format('YYYY-MM-DD HH:mm');
                     return state;
                 }));
@@ -74,17 +74,12 @@ function App() {
     const loadLatest = useCallback(function () {
         fetch(getUrl(null, true))
             .then((res) => res.json())
-            .then(({data: sensorData, locations}) => {
-                // setData(sensorData.map((state: { timestamp: string, value: number }) => {
-                //     state.timestamp = dayjs(state.timestamp).add(2, 'h').format('YYYY-MM-DD HH:mm');
-                //     return state;
-                // }));
-
+            .then(({values, locations}) => {
                 setLocations(locations);
                 
                 // Store latest values by location type
                 const valuesByType: {[key: string]: number} = {};
-                sensorData.forEach((item: { timestamp: string, value: number, type?: string }) => {
+                values.forEach((item: { timestamp: string, value: number, type?: string }) => {
                     if (item.type) {
                         valuesByType[item.type] = item.value;
                     }
@@ -95,7 +90,6 @@ function App() {
 
     useLayoutEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        // const hours = parseInt(params.get('hours') as string) || 3;
         const rangeParam = params.get('range');
 
         const rangeArr = rangeParam
@@ -154,7 +148,7 @@ function App() {
         // Load Google Maps API if not already loaded
         if (typeof google === 'undefined') {
             const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}&libraries=places`;
             script.async = true;
             script.defer = true;
             script.onload = initMap;

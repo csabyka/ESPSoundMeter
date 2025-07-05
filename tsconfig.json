@@ -22,6 +22,7 @@
   },
   "include": [
     "src",
-    "src/google-maps.d.ts"
+    "src/google-maps.d.ts",
+    "src/environment.d.ts"
   ]
 }
