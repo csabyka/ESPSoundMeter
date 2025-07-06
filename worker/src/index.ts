@@ -121,7 +121,7 @@ const app = {
 				// {type: 'external_3', lat: 0, lng: 0},
 				// {type: 'external_4', lat: 0, lng: 0},
 				{type: 'external_5', lat: 47.023494, lng: 18.211152}, // approx
-				// {type: 'external_6', lat: 0, lng: 0},
+				{type: 'external_6', lat: 46.990495, lng: 18.178974},
 				// {type: 'external_7', lat: 0, lng: 0},
 			]
 		}, {
