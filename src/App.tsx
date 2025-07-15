@@ -177,14 +177,15 @@ function App() {
         
         locations.forEach((location) => {
             const latestValue = latestValues[location.type] || 0;
+            const displayValue = parseFloat(latestValue.toString()).toFixed(2);
             
             // Create a custom marker with 50-meter diameter circle
             const marker = new google.maps.Marker({
                 position: { lat: location.lat, lng: location.lng },
                 map: mapInstanceRef.current,
-                title: `${location.type}: ${latestValue} dBa`,
+                title: `${location.type}: ${displayValue} dBa`,
                 label: {
-                    text: `${latestValue}`,
+                    text: `${displayValue}`,
                     color: 'white',
                     fontWeight: 'bold'
                 },
