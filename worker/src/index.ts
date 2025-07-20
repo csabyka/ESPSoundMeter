@@ -119,7 +119,7 @@ const app = {
 				{type: 'external_1', lat: 47.014146, lng: 18.206357},
 				// {type: 'external_2', lat: 0, lng: 0},
 				// {type: 'external_3', lat: 0, lng: 0},
-				// {type: 'external_4', lat: 0, lng: 0},
+				{type: 'external_4', lat: 47.018125, lng: 18.216391},
 				{type: 'external_5', lat: 47.023494, lng: 18.211152}, // approx
 				{type: 'external_6', lat: 46.990495, lng: 18.178974},
 				{type: 'external_7', lat: 47.025650, lng: 18.207185},
