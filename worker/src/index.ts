@@ -117,8 +117,8 @@ const app = {
 			locations: [
 				{type: 'home', lat: 47.015748, lng: 18.205129},
 				{type: 'external_1', lat: 47.014146, lng: 18.206357},
-				// {type: 'external_2', lat: 0, lng: 0},
-				// {type: 'external_3', lat: 0, lng: 0},
+				{type: 'external_2', lat: 47.015748, lng: 18.205129},
+				{type: 'external_3', lat: 47.006522, lng: 18.170999},
 				{type: 'external_4', lat: 47.018125, lng: 18.216391},
 				{type: 'external_5', lat: 47.023494, lng: 18.211152}, // approx
 				{type: 'external_6', lat: 46.990495, lng: 18.178974},
