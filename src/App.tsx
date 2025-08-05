@@ -20,8 +20,7 @@ function App() {
 
         return [
             {label: 'Last 1 hour', value: [now.add(-1, 'h'), now]},
-            {label: 'Last 3 hours', value: [now.add(-3, 'h'), now]},
-            {label: 'Last 6 hours', value: [now.add(-6, 'h'), now]},
+            {label: 'Last 8 hours', value: [now.add(-8, 'h'), now]},
             {label: 'Last 12 hours', value: [now.add(-12, 'h'), now]},
             {label: 'Last 1 day', value: [now.add(-1, 'd'), now]},
             {label: 'Last 3 day', value: [now.add(-3, 'd'), now]},
@@ -95,7 +94,7 @@ function App() {
             ? rangeParam.split('-').map((t) => {
                 const timestamp = dayjs.unix(+t);
                 return timestamp.isValid() ? timestamp : null;
-            }) as Range : [dayjs().add(-3, 'h'), dayjs()] as Range;
+            }) as Range : [dayjs().add(-8, 'h'), dayjs()] as Range;
 
         setRange(rangeArr);
 
