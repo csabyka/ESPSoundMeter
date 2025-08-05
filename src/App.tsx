@@ -24,6 +24,7 @@ function App() {
             {label: 'Last 6 hours', value: [now.add(-6, 'h'), now]},
             {label: 'Last 12 hours', value: [now.add(-12, 'h'), now]},
             {label: 'Last 1 day', value: [now.add(-1, 'd'), now]},
+            {label: 'Last 3 day', value: [now.add(-3, 'd'), now]},
             {label: 'Last 1 week', value: [now.add(-1, 'w'), now]},
         ]
     }, []);
