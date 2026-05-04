@@ -2,20 +2,14 @@ import {AnalyticsResponse, Env, Sensor} from '../types';
 // @ts-ignore
 import dayjs from 'dayjs';
 
+const sensorName = 'sound_level_metere';
+
 const sensorIds: Sensor['entity_id'][] = [
 	'sensor.soundmeter_laeq_1min',
 	'sensor.soundmeter_lamax_1s_1min',
 	'sensor.soundmeter_lamin_1s_1min',
 	'sensor.soundmeter_lapeak_1min',
-	'sensor.soundmeter_lceq_1min',
-	'sensor.soundmeter_lcmax_1s_1min',
-	'sensor.soundmeter_lcmin_1s_1min',
-	'sensor.soundmeter_lcpeak_1min',
-	'sensor.soundmeter_lzeq_1min',
-	'sensor.soundmeter_lzeq_1s',
-	'sensor.soundmeter_lzmax_1s_1min',
-	'sensor.soundmeter_lzmin_1s_1min',
-	'sensor.soundmeter_lzpeak_1min',
+	'sensor.soundmeter_nox',
 ];
 
 function getData(query: string, env: Env): Promise<AnalyticsResponse> {
@@ -51,13 +45,13 @@ const app = {
 		}).then(res => res.json());
 
 		writeDataPoint(sensors, env.SOUNDMETER, sensorIds, 'esp-sound-meter');
-		writeDataPoint(sensors, env.SOUNDMETER_E1, sensorIds.map(id => id.replace('soundmeter_', 'soundmeter_external1_')), 'esp-sound-meter-external-1');
-		writeDataPoint(sensors, env.SOUNDMETER_E2, sensorIds.map(id => id.replace('soundmeter_', 'soundmeter_external2_')), 'esp-sound-meter-external-2');
-		writeDataPoint(sensors, env.SOUNDMETER_E3, sensorIds.map(id => id.replace('soundmeter_', 'soundmeter_external3_')), 'esp-sound-meter-external-3');
-		writeDataPoint(sensors, env.SOUNDMETER_E4, sensorIds.map(id => id.replace('soundmeter_', 'soundmeter_external4_')), 'esp-sound-meter-external-4');
-		writeDataPoint(sensors, env.SOUNDMETER_E5, sensorIds.map(id => id.replace('soundmeter_', 'soundmeter_external5_')), 'esp-sound-meter-external-5');
-		writeDataPoint(sensors, env.SOUNDMETER_E6, sensorIds.map(id => id.replace('soundmeter_', 'soundmeter_external6_')), 'esp-sound-meter-external-6');
-		writeDataPoint(sensors, env.SOUNDMETER_E7, sensorIds.map(id => id.replace('soundmeter_', 'soundmeter_external7_')), 'esp-sound-meter-external-7');
+		writeDataPoint(sensors, env.SOUNDMETER_E1, sensorIds.map(id => id.replace('soundmeter_', `${sensorName}1_`)), 'esp-sound-meter-external-1');
+		writeDataPoint(sensors, env.SOUNDMETER_E2, sensorIds.map(id => id.replace('soundmeter_', `${sensorName}2_`)), 'esp-sound-meter-external-2');
+		writeDataPoint(sensors, env.SOUNDMETER_E3, sensorIds.map(id => id.replace('soundmeter_', `${sensorName}3_`)), 'esp-sound-meter-external-3');
+		writeDataPoint(sensors, env.SOUNDMETER_E4, sensorIds.map(id => id.replace('soundmeter_', `${sensorName}4_`)), 'esp-sound-meter-external-4');
+		writeDataPoint(sensors, env.SOUNDMETER_E5, sensorIds.map(id => id.replace('soundmeter_', `${sensorName}5_`)), 'esp-sound-meter-external-5');
+		writeDataPoint(sensors, env.SOUNDMETER_E6, sensorIds.map(id => id.replace('soundmeter_', `${sensorName}6_`)), 'esp-sound-meter-external-6');
+		writeDataPoint(sensors, env.SOUNDMETER_E7, sensorIds.map(id => id.replace('soundmeter_', `${sensorName}7_`)), 'esp-sound-meter-external-7');
 	},
 	async fetch(req: Request, env: Env) {
 		const params = new URL(req.url).searchParams;
