@@ -10,6 +10,7 @@ const sensorIds: Sensor['entity_id'][] = [
 	'sensor.soundmeter_lamin_1s_1min',
 	'sensor.soundmeter_lapeak_1min',
 	'sensor.soundmeter_nox',
+	'sensor.soundmeter_voc',
 ];
 
 function getData(query: string, env: Env): Promise<AnalyticsResponse> {

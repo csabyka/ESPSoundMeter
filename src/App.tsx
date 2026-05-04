@@ -190,7 +190,7 @@ function App() {
                 icon: {
                     path: google.maps.SymbolPath.CIRCLE,
                     scale: 30, // 60-meter diameter (30 pixels radius)
-                    fillColor: latestValue > 50 ? '#FC2947' : '#4285F4', // Red if > 50 dBa, blue otherwise
+                    fillColor: latestValue > 65 ? '#FC2947' : '#4285F4', // Red if > 65 dBa, blue otherwise
                     fillOpacity: 0.8,
                     strokeColor: '#FFFFFF',
                     strokeWeight: 2
@@ -239,7 +239,7 @@ function App() {
                 colorField="type"
                 annotations={[{
                     type: "lineY",
-                    yField: 50,
+                    yField: 65,
                     style: {stroke: "#FC2947", strokeOpacity: 1, lineWidth: 2},
                 }]}
             />
